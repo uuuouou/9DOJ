@@ -12,7 +12,7 @@ set<int> neighbour[MAX_NODE];
 queue<int> q;
 bool inq[MAX_NODE];
 int dis[MAX_NODE];
-int in[MAX_NODE], out[MAX_NODE];
+bool isCrucial[MAX_NODE];
 
 void build()
 {
@@ -51,11 +51,10 @@ void spfa()
 		}
 	}
 }
-int findCrucial()
+int findCrucial()//traverse from destination to start
 {
 	memset(inq+1, 0, n);
-	memset(in+1, 0, n << 2);
-	memset(out+1, 0, n << 2);
+	memset(isCrucial+1, 0, n);
 
 	q.push(t);
 	inq[t] = true;
@@ -63,6 +62,7 @@ int findCrucial()
 	set<int>::iterator iter, eter;
 	while(!q.empty()){
 		int levelCount = q.size();
+		if(levelCount == 1) isCrucial[q.front()] = true;
 		while(levelCount--){
 			int x = q.front(); q.pop(); inq[x] = false;
 			iter = neighbour[x].begin();
@@ -70,8 +70,6 @@ int findCrucial()
 			for(; iter != eter; ++iter){
 				int y = *iter;
 				if(dis[x] == dis[y] + 1){
-					++out[x];
-					++in[y];
 					if(!inq[y]){
 						q.push(y);
 						inq[y] = true;
@@ -83,12 +81,9 @@ int findCrucial()
 
 	int total = 0;
 	for(int i = 1; i <= n; ++i){
-		if(in[i] > 1 || out[i] > 1){
-			//printf("in[%d] = %d, out[%d] = %d\n", i, in[i], i, out[i]);
-			++total;
-		}
+		if(isCrucial[i]) ++total;
 	}
-	return total - (in[s] > 1) - (out[t] > 1);
+	return total - 2;
 }
 
 int main()
@@ -96,7 +91,7 @@ int main()
 	while(scanf("%d%d%d%d", &n, &m, &s, &t) == 4){
 		build();
 		spfa();
-		if(dis[t] == INF) puts("0");
+		if(dis[t] == INF || dis[t] < 2) puts("0");
 		else printf("%d\n", findCrucial());
 	}
 	return 0;
